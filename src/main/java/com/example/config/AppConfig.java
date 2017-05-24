@@ -29,7 +29,7 @@ public class AppConfig {
 	    LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 	    em.setDataSource(dataSource());
 	    em.setPersistenceProviderClass(HibernatePersistenceProvider.class);
-	    em.setPackagesToScan("com.example.dao");
+	    em.setPackagesToScan("com.example.service");
 	    return em;
 	}
 }

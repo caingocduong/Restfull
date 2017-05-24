@@ -1,18 +1,21 @@
-package com.example.dao;
+package com.example.service;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.example.repository.UserRepository;
 
-public class UserDAO {
+@Service
+public class UserService {
 	@Autowired
 	private UserRepository userRepo;
 
-	public UserDAO(){
+	public UserService(){
 
 	}
-	public UserDAO(UserRepository userRepo){
+	public UserService(UserRepository userRepo){
 		this.userRepo = userRepo;
 	}
 	public void addUser(User bean){

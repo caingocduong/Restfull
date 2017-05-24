@@ -11,15 +11,14 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.dao.User;
-import com.example.dao.UserDAO;
-import com.example.repository.UserRepository;
+import com.example.service.User;
+import com.example.service.UserService;
 
 @RestController
 public class RestfulController{
 	@Autowired
-	private UserRepository userRepo;
-	
+	private UserService userService;
+
 	@RequestMapping(value = "/rest/hello", method = RequestMethod.GET)
 	public String hello(){
 		return "Restful API using Spring";
@@ -30,9 +29,8 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public User createUser(@RequestBody User user){
-		UserDAO dao = new UserDAO(userRepo);
-		if(dao.existedUser(user.getId()) == 0){
-			dao.addUser(user);
+		if(userService.existedUser(user.getId()) == 0){
+			userService.addUser(user);
 			user.setDescription("Create succesfully");
 			
 			return user;
@@ -48,8 +46,7 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<User> readUser(){
-		UserDAO dao = new UserDAO(userRepo);
-		List<User> users = dao.getUser();
+		List<User> users = userService.getUser();
 		if(users.isEmpty()){
 			return null;
 		}
@@ -61,15 +58,14 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public User updateUser(@PathVariable("id") int id,@RequestBody User user){
-		UserDAO dao = new UserDAO(userRepo);
-		if(dao.existedUser(id) == 0){
+		if(userService.existedUser(id) == 0){
 			user.setId(id);
 			user.setDescription("User is not exist.");
 			
 			return user;
 		} else {
 			user.setId(id);
-			dao.updateUser(id, user);
+			userService.updateUser(id, user);
 			user.setDescription("Upate successfully!");
 			
 			return user;
@@ -81,18 +77,17 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public User deleteUser(@PathVariable("id") int id){
-		UserDAO dao = new UserDAO(userRepo);
-		if(dao.existedUser(id) == 0){
+		if(userService.existedUser(id) == 0){
 			User user = new User(id);
 			user.setDescription("User is not exist.");
 			
 			return user;
 		} else {
 			User user = new User(id);
-			user.setName(dao.getUser(id).getName());
-			user.setAge(dao.getUser(id).getAge());
-			user.setDescription(dao.getUser(id).getName());
-			dao.deleteUser(id);
+			user.setName(userService.getUser(id).getName());
+			user.setAge(userService.getUser(id).getAge());
+			user.setDescription(userService.getUser(id).getName());
+			userService.deleteUser(id);
 			
 			return user;
 		}
@@ -104,9 +99,8 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<User> getUserByAge(@PathVariable("age") int age){
-		UserDAO dao = new UserDAO(userRepo);
 		
-		return dao.getUserByAge(age);
+		return userService.getUserByAge(age);
 	}
 	
 	@RequestMapping(value="/rest/usersbyname/{name}", 
@@ -114,8 +108,7 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<User> getUserByName(@PathVariable("name") String name){
-		UserDAO dao = new UserDAO(userRepo);
 		
-		return dao.getUserByName(name);
+		return userService.getUserByName(name);
 	}
 }
