@@ -3,7 +3,9 @@ package com.example.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,16 +30,16 @@ public class RestfulController{
 			method = RequestMethod.POST,
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public User createUser(@RequestBody User user){
-		if(userService.existedUser(user.getId()) == 0){
+	public ResponseEntity<User> createUser(@RequestBody User user){
+		if(!userService.isExistUser(user.getId())){
 			userService.addUser(user);
 			user.setDescription("Create succesfully");
 			
-			return user;
+			return new ResponseEntity<User>(user,HttpStatus.CREATED);
 		} else {
 			user.setDescription("ID existed!");
 			
-			return user;
+			return new ResponseEntity<User>(HttpStatus.CONFLICT);
 		}
 	}
 	
@@ -46,7 +48,7 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<User> readUser(){
-		List<User> users = userService.getUser();
+		List<User> users = userService.retreiveUsers();
 		if(users.isEmpty()){
 			return null;
 		}
@@ -57,18 +59,18 @@ public class RestfulController{
 			method = RequestMethod.PUT,
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public User updateUser(@PathVariable("id") int id,@RequestBody User user){
-		if(userService.existedUser(id) == 0){
+	public ResponseEntity<User> updateUser(@PathVariable("id") int id,@RequestBody User user){
+		if(!userService.isExistUser(user.getId())){
 			user.setId(id);
-			user.setDescription("User is not exist.");
+			user.setDescription("User does not exist.");
 			
-			return user;
+			return new ResponseEntity<User>(user, HttpStatus.NOT_FOUND);
 		} else {
 			user.setId(id);
-			userService.updateUser(id, user);
-			user.setDescription("Upate successfully!");
+			userService.updateUser(user);
+			user.setDescription("Updated successfully!");
 			
-			return user;
+			return new ResponseEntity<User>(user, HttpStatus.OK);
 		}
 	}
 	
@@ -76,39 +78,34 @@ public class RestfulController{
 			method = RequestMethod.DELETE,
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public User deleteUser(@PathVariable("id") int id){
-		if(userService.existedUser(id) == 0){
+	public ResponseEntity<User> deleteUser(@PathVariable("id") int id){
+		if(!userService.isExistUser(id)){
 			User user = new User(id);
-			user.setDescription("User is not exist.");
+			user.setDescription("User does not exist.");
 			
-			return user;
+			return new ResponseEntity<User>(user,HttpStatus.NOT_FOUND);
 		} else {
-			User user = new User(id);
-			user.setName(userService.getUser(id).getName());
-			user.setAge(userService.getUser(id).getAge());
-			user.setDescription(userService.getUser(id).getName());
-			userService.deleteUser(id);
 			
-			return user;
+			return new ResponseEntity<User>(userService.deleteUser(id), HttpStatus.OK);
 		}
 		
-	}
+	} 
 	
 	@RequestMapping(value="/rest/usersbyage/{age}", 
 			method = RequestMethod.GET,
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public List<User> getUserByAge(@PathVariable("age") int age){
+	public List<User> getUsersByAge(@PathVariable("age") int age){
 		
-		return userService.getUserByAge(age);
+		return userService.getUsersByAge(age);
 	}
 	
 	@RequestMapping(value="/rest/usersbyname/{name}", 
 			method = RequestMethod.GET,
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
-	public List<User> getUserByName(@PathVariable("name") String name){
+	public List<User> getUsersByName(@PathVariable("name") String name){
 		
-		return userService.getUserByName(name);
+		return userService.getUsersByName(name);
 	}
 }

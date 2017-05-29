@@ -25,7 +25,7 @@ public class UserService {
 		userRepo.save(user);
 	}
 
-	public List<User> getUser(){
+	public List<User> retreiveUsers(){
 		List<User> users =  (ArrayList<User>) userRepo.findAll();
 
 		return users;
@@ -36,31 +36,46 @@ public class UserService {
 		return userRepo.findOne(id);
 	}
 	
-	public int existedUser(int id){
+	public boolean isExistUser(int id){
 		User user = userRepo.findOne(id);
 		
-		return user == null ? 0 : 1; 
+		return user == null ? false : true; 
 	}
 	
-	public void deleteUser(int id){
+	public User deleteUser(int id){
+		User user = userRepo.findOne(id);
 		userRepo.delete(id);
+		
+		return user;
 	}
-
-	public void updateUser(int id,User bean){
+	
+	public User updateUser(int id,User bean){
 		User user = userRepo.findOne(id);
 		user.setName(bean.getName());
 		user.setAge(bean.getAge());
-
+		userRepo.saveAndFlush(user);
+		
+		return user;
+	}
+	
+	public User updateUser(User u){
+		User user = new User(u.getId());
+		user.setName(u.getName());
+		user.setAge(u.getAge());
+		user.setDescription(u.getDescription());
 		userRepo.save(user);
+		
+		return user;
 	}
 	
-	public List<User> getUserByAge(int age){
+	public List<User> getUsersByAge(int age){
 		
-		return userRepo.getUserByAge(age);
+		return userRepo.getUsersByAge(age);
 	}
 	
-	public List<User> getUserByName(String name){
+	public List<User> getUsersByName(String name){
 		
-		return userRepo.getUserByName(name);
+		return userRepo.getUsersByName(name);
 	}
+	
 }

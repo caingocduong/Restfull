@@ -4,10 +4,15 @@ import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 
 import org.hibernate.jpa.HibernatePersistenceProvider;
+import org.mockito.Mockito;
+import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+
+import com.example.service.UserService;
 @Configuration
 public class AppConfig {
 	@Bean
@@ -32,4 +37,19 @@ public class AppConfig {
 	    em.setPackagesToScan("com.example.service");
 	    return em;
 	}
+	
+	// For testing
+	@Bean
+    public MessageSource messageSource() {
+        ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+ 
+        messageSource.setUseCodeAsDefaultMessage(true);
+ 
+        return messageSource;
+    }
+ 
+    @Bean
+    public UserService userService() {
+        return Mockito.mock(UserService.class);
+    }
 }
