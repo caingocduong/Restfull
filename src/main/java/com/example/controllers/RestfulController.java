@@ -1,4 +1,4 @@
-package com.example.controller;
+package com.example.controllers;
 
 import java.util.List;
 
@@ -13,15 +13,15 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.service.User;
-import com.example.service.UserService;
+import com.example.entities.User;
+import com.example.services.UserService;
 
 @RestController
 public class RestfulController{
 	@Autowired
 	private UserService userService;
-
-	@RequestMapping(value = "/rest/hello", method = RequestMethod.GET)
+	
+	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String hello(){
 		return "Restful API using Spring";
 	}
@@ -48,6 +48,7 @@ public class RestfulController{
 			produces=MediaType.APPLICATION_JSON_VALUE)
 	@ResponseBody
 	public List<User> readUser(){
+	
 		List<User> users = userService.retreiveUsers();
 		if(users.isEmpty()){
 			return null;
@@ -80,7 +81,8 @@ public class RestfulController{
 	@ResponseBody
 	public ResponseEntity<User> deleteUser(@PathVariable("id") int id){
 		if(!userService.isExistUser(id)){
-			User user = new User(id);
+			User user = new User();
+			user.setId(id);
 			user.setDescription("User does not exist.");
 			
 			return new ResponseEntity<User>(user,HttpStatus.NOT_FOUND);

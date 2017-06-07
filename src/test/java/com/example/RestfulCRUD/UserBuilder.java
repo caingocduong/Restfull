@@ -1,6 +1,6 @@
 package com.example.RestfulCRUD;
 
-import com.example.service.User;
+import com.example.entities.User;
 
 public class UserBuilder {
 	int id;
@@ -33,6 +33,12 @@ public class UserBuilder {
 	}
 	
 	public User buid(){
-		return new User(id,name,age,description);
+		User user = new User();
+		user.setId(id);
+		user.setName(name);
+		user.setAge(age);
+		user.setDescription(description);
+		
+		return user;
 	}
 }

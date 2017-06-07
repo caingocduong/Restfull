@@ -12,9 +12,11 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 
-import com.example.service.UserService;
+import com.example.services.UserService;
+
 @Configuration
 public class AppConfig {
+	//=================================== Data ==================================================
 	@Bean
 	public DataSource dataSource() {
 	    DriverManagerDataSource dataSource = new DriverManagerDataSource();
@@ -34,11 +36,11 @@ public class AppConfig {
 	    LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
 	    em.setDataSource(dataSource());
 	    em.setPersistenceProviderClass(HibernatePersistenceProvider.class);
-	    em.setPackagesToScan("com.example.service");
+	    em.setPackagesToScan("com.example.entities");
 	    return em;
 	}
 	
-	// For testing
+	//=================================== Testing ==================================================
 	@Bean
     public MessageSource messageSource() {
         ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
@@ -50,6 +52,8 @@ public class AppConfig {
  
     @Bean
     public UserService userService() {
+    	
         return Mockito.mock(UserService.class);
     }
+    
 }

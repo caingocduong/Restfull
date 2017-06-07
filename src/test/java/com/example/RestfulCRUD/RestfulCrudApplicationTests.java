@@ -11,6 +11,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.nio.charset.Charset;
 import java.util.Arrays;
 
+import javax.annotation.Resource;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,17 +22,20 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.util.Base64Utils;
 import org.springframework.web.context.WebApplicationContext;
 
 import com.example.config.AppConfig;
-import com.example.controller.RestfulController;
-import com.example.service.User;
-import com.example.service.UserService;
+import com.example.controllers.RestfulController;
+import com.example.entities.User;
+import com.example.services.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import static org.hamcrest.Matchers.*;
@@ -54,13 +59,17 @@ public class RestfulCrudApplicationTests {
 	@Autowired
 	private WebApplicationContext webApplicationContext;
 	
+	@Resource
+	private FilterChainProxy filterChainProxy;
+	
 	@InjectMocks
 	private RestfulController restController;
 	
 	@Before
 	public void setUp() throws Exception{
 		MockitoAnnotations.initMocks(this);
-		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+		this.mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext)
+									.addFilters(filterChainProxy).build();
 		this.mockMvc = MockMvcBuilders.standaloneSetup(restController).build();
 	}
 	//========================Test get all users=======================================
@@ -210,5 +219,51 @@ public class RestfulCrudApplicationTests {
 		assertThat(u.getName(), is("Darren"));
 		assertThat(u.getAge(), is(15));
 	}
+	
+	//========================Test Restful API with Spring OAuth2=======================================
+	@Test
+	public void retreiveUserUnauthorized () throws Exception {
+		mockMvc.perform(get("/rest/users"))
+					.andExpect(status().isUnauthorized())
+					.andExpect(jsonPath("$.error", is("unauthorized")));
+	}
+	
+	private String getAccessToken(String username, String password) throws Exception {
+		String authorization = "Basic "
+				+ new String(Base64Utils.encode("my-trusted-client:secret".getBytes()));
+		String content = mockMvc.perform(post("/oauth/token")
+											.header("Authorization", authorization)
+											.contentType(APPLICATION_JSON_UTF8)
+											.param("username", username)
+											.param("password", password)
+											.param("grant_type", "password")
+											.param("client_id", "my-trusted-client")
+											.param("client_secret", "123456"))
+								.andExpect(status().isOk())
+								.andExpect(content().contentType(APPLICATION_JSON_UTF8))
+								.andExpect(jsonPath("$.access_token", is(notNullValue())))
+								.andExpect(jsonPath("$.token_type", is("bearer")))
+								.andExpect(jsonPath("$.refresh_token", is(notNullValue())))
+								.andExpect(jsonPath("$.expires_in", is(greaterThan(500))))
+								.andExpect(jsonPath("$.scope", is("read write trust")))
+								.andReturn().getResponse().getContentAsString();
 
+		return content.substring(17, 53);
+	}
+	
+	@Test
+	public void retreiveUserAuthorized() throws Exception {
+		String accessToken = getAccessToken("darren", "123456");
+		
+		mockMvc.perform(get("/rest/users")
+						.header("Authorization", "Bearer "+accessToken))
+				.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void usersEndpointAccessDenied() throws Exception {
+		mockMvc.perform(get("/rest/users")
+						.header("Authorization", "Bearer "+getAccessToken("larry", "123456")))
+				.andExpect(status().isForbidden());
+	}
 }

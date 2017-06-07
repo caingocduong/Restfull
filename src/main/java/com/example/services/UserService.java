@@ -1,11 +1,12 @@
-package com.example.service;
+package com.example.services;
 
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.repository.UserRepository;
+import com.example.entities.User;
+import com.example.repositories.UserRepository;
 
 @Service
 public class UserService {
@@ -18,13 +19,14 @@ public class UserService {
 	public UserService(UserRepository userRepo){
 		this.userRepo = userRepo;
 	}
+	
 	public void addUser(User bean){
 		User user = new User();
 		user.setName(bean.getName());
 		user.setAge(bean.getAge());
 		userRepo.save(user);
 	}
-
+	
 	public List<User> retreiveUsers(){
 		List<User> users =  (ArrayList<User>) userRepo.findAll();
 
@@ -59,7 +61,8 @@ public class UserService {
 	}
 	
 	public User updateUser(User u){
-		User user = new User(u.getId());
+		User user = new User();
+		user.setId(u.getId());
 		user.setName(u.getName());
 		user.setAge(u.getAge());
 		user.setDescription(u.getDescription());
