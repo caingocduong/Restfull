@@ -1,10 +1,14 @@
 package com.example.security;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.PermissionEvaluator;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -18,6 +22,8 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
 
 @Configuration
+@ComponentScan
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
 public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter{
 	@Autowired
@@ -38,8 +44,7 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter{
 		.anonymous().disable()
 		.csrf().disable()
 		.authorizeRequests()
-		.antMatchers("/oauth/token").permitAll()
-		.antMatchers("/rest/**").hasRole("ADMIN");
+		.antMatchers("/oauth/token").permitAll();
 	}
 
 	@Bean
@@ -51,7 +56,7 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter{
 	@Bean
 	@Override
 	public UserDetailsService userDetailsServiceBean() throws Exception {
-		
+
 		return super.userDetailsServiceBean();
 	}
 
@@ -80,5 +85,12 @@ public class OAuth2SecurityConfiguration extends WebSecurityConfigurerAdapter{
 
 		return store;
 	}
+	
+	// this causes an IllegalArgumentException ("A ServletContext is required to configure default servlet handling")
+	@Bean
+    public PermissionEvaluator permissionEvaluator() {
+        MyPermissionEvaluator bean = new MyPermissionEvaluator();
+        return bean;
+    }
 
 }

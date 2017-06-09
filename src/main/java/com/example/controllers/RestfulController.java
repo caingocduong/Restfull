@@ -6,30 +6,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.entities.User;
-import com.example.services.UserService;
+import com.example.services.UserServiceImpl;
 
 @RestController
 public class RestfulController{
 	@Autowired
-	private UserService userService;
+	private UserServiceImpl userService;
 	
-	@RequestMapping(value = "/", method = RequestMethod.GET)
+	public  RestfulController(UserServiceImpl userService) {
+		this.userService = userService;
+	}
+	
+	public RestfulController() {}
+	
+	@GetMapping(value = "/")
 	public String hello(){
 		return "Restful API using Spring";
 	}
 	
-	@RequestMapping(value = "/rest/adduser", 
-			method = RequestMethod.POST,
+	@PostMapping(value = "/rest/adduser", 
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
 	public ResponseEntity<User> createUser(@RequestBody User user){
 		if(!userService.isExistUser(user.getId())){
 			userService.addUser(user);
@@ -43,23 +48,21 @@ public class RestfulController{
 		}
 	}
 	
-	@RequestMapping(value="/rest/users", 
-			method = RequestMethod.GET,
+	@GetMapping(value="/rest/users", 
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
-	public List<User> readUser(){
-	
+	public ResponseEntity<List<User>> readUser(){
+		//Logger log = LogManager.getLogger(RestfulController.class);
 		List<User> users = userService.retreiveUsers();
 		if(users.isEmpty()){
-			return null;
+			
+			return new ResponseEntity<List<User>>(HttpStatus.NO_CONTENT);
 		}
-		return users;
+		
+		return new ResponseEntity<List<User>>(users, HttpStatus.OK);
 	}
 	
-	@RequestMapping(value = "/rest/updateuser/{id}", 
-			method = RequestMethod.PUT,
+	@PutMapping(value = "/rest/updateuser/{id}", 
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
 	public ResponseEntity<User> updateUser(@PathVariable("id") int id,@RequestBody User user){
 		if(!userService.isExistUser(user.getId())){
 			user.setId(id);
@@ -75,10 +78,8 @@ public class RestfulController{
 		}
 	}
 	
-	@RequestMapping(value = "/rest/delete/{id}", 
-			method = RequestMethod.DELETE,
+	@DeleteMapping(value = "/rest/delete/{id}", 
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
 	public ResponseEntity<User> deleteUser(@PathVariable("id") int id){
 		if(!userService.isExistUser(id)){
 			User user = new User();
@@ -93,19 +94,15 @@ public class RestfulController{
 		
 	} 
 	
-	@RequestMapping(value="/rest/usersbyage/{age}", 
-			method = RequestMethod.GET,
+	@GetMapping(value="/rest/usersbyage/{age}", 
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
 	public List<User> getUsersByAge(@PathVariable("age") int age){
 		
 		return userService.getUsersByAge(age);
 	}
 	
-	@RequestMapping(value="/rest/usersbyname/{name}", 
-			method = RequestMethod.GET,
+	@GetMapping(value="/rest/usersbyname/{name}", 
 			produces=MediaType.APPLICATION_JSON_VALUE)
-	@ResponseBody
 	public List<User> getUsersByName(@PathVariable("name") String name){
 		
 		return userService.getUsersByName(name);

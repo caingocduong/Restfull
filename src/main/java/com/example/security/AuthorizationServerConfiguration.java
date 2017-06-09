@@ -1,6 +1,5 @@
 package com.example.security;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
@@ -17,7 +16,7 @@ import org.springframework.security.oauth2.provider.token.TokenStore;
 @EnableAuthorizationServer
 public class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter{
 	private String REALM = "MY_OAUTH_REALM";
-	
+
 	@Autowired
 	private TokenStore tokenStore;
 	
@@ -36,8 +35,8 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 			.scopes("read","write","trust")
 			.secret("secret")
 			.resourceIds("my_rest_api")
-			.accessTokenValiditySeconds(600)
-			.refreshTokenValiditySeconds(600);
+			.accessTokenValiditySeconds(6000)
+			.refreshTokenValiditySeconds(6000);
 	}
 	
 	@Override
